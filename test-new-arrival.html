@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Arrival API Test</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .test-section {
+            margin-bottom: 40px;
+            padding: 25px;
+            border: 2px solid #f0f0f0;
+            border-radius: 10px;
+            background: #fafafa;
+        }
+
+        .test-section h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: transform 0.2s;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+        }
+
+        .btn-success {
+            background: #28a745;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+        }
+
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .result.success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+
+        .result.error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+
+        .result.info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .status {
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .status.connected {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status.disconnected {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .file-label {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #667eea;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+
+        .file-label:hover {
+            background: #5a6fd8;
+        }
+
+        .selected-files {
+            margin-top: 10px;
+            font-size: 14px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 New Arrival API Test</h1>
+            <p>Test the updated New Arrival API with product-specific fields</p>
+        </div>
+
+        <div class="content">
+            <!-- Connection Status -->
+            <div id="connectionStatus" class="status disconnected">
+                🔴 Not connected to server
+            </div>
+
+            <!-- Login Section -->
+            <div class="test-section">
+                <h2>🔐 Admin Login</h2>
+                <div class="form-group">
+                    <label for="adminEmail">Email:</label>
+                    <input type="email" id="adminEmail" value="admin@example.com" placeholder="Enter admin email">
+                </div>
+                <div class="form-group">
+                    <label for="adminPassword">Password:</label>
+                    <input type="password" id="adminPassword" value="admin123" placeholder="Enter admin password">
+                </div>
+                <button class="btn" onclick="loginAdmin()">Login</button>
+                <div id="loginResult" class="result" style="display: none;"></div>
+            </div>
+
+            <!-- Create New Arrival Section -->
+            <div class="test-section">
+                <h2>➕ Create New Arrival</h2>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="productId">Product ID (Optional):</label>
+                        <input type="text" id="productId" placeholder="Enter existing product ID (leave empty for standalone new arrival)">
+                    </div>
+                    <div class="form-group">
+                        <label for="title">Product Title:</label>
+                        <input type="text" id="title" value="Heavy GSM Printed Monster T-Shirt | Red" placeholder="Enter product title">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="description">Description:</label>
+                    <textarea id="description" rows="3" placeholder="Enter product description">Premium quality heavy GSM cotton t-shirt with monster print design. Perfect for casual wear with comfortable fit and durable material.</textarea>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="currentPrice">Current Price (₹):</label>
+                        <input type="number" id="currentPrice" value="895" placeholder="Enter current price">
+                    </div>
+                    <div class="form-group">
+                        <label for="originalPrice">Original Price (₹):</label>
+                        <input type="number" id="originalPrice" value="1399" placeholder="Enter original price">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="discountPercentage">Discount Percentage:</label>
+                        <input type="number" id="discountPercentage" value="36" placeholder="Enter discount percentage">
+                    </div>
+                    <div class="form-group">
+                        <label for="bestPrice">Best Price (₹):</label>
+                        <input type="number" id="bestPrice" value="859" placeholder="Enter best price">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="brand">Brand:</label>
+                        <input type="text" id="brand" value="Monster Brand" placeholder="Enter brand name">
+                    </div>
+                    <div class="form-group">
+                        <label for="color">Color:</label>
+                        <input type="text" id="color" value="Red" placeholder="Enter color">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="material">Material:</label>
+                    <input type="text" id="material" value="Heavy GSM Cotton" placeholder="Enter material">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="rating">Rating:</label>
+                        <input type="number" id="rating" value="4.2" step="0.1" min="0" max="5" placeholder="Enter rating">
+                    </div>
+                    <div class="form-group">
+                        <label for="numReviews">Number of Reviews:</label>
+                        <input type="number" id="numReviews" value="156" placeholder="Enter number of reviews">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="tags">Tags (comma-separated):</label>
+                    <input type="text" id="tags" value="clothing,t-shirt,monster,new-arrival,casual" placeholder="Enter tags">
+                </div>
+                <div class="form-group">
+                    <label for="adminNotes">Admin Notes:</label>
+                    <textarea id="adminNotes" rows="2" placeholder="Enter admin notes">High priority new arrival with strong customer interest</textarea>
+                </div>
+                <div class="form-group">
+                    <label>Product Images:</label>
+                    <label for="imageFiles" class="file-label">📁 Select Images (Min 3)</label>
+                    <input type="file" id="imageFiles" class="file-input" multiple accept="image/*">
+                    <div id="selectedFiles" class="selected-files"></div>
+                    <small style="color: #666; font-size: 12px;">
+                        ⚠️ Important: All files must be under 10MB each. Only image files (JPG, PNG, GIF) are allowed.
+                    </small>
+                </div>
+                <button class="btn btn-success" onclick="createNewArrival()">Create New Arrival</button>
+                <div id="createResult" class="result" style="display: none;"></div>
+            </div>
+
+            <!-- Get New Arrivals Section -->
+            <div class="test-section">
+                <h2>📋 Get New Arrivals</h2>
+                <button class="btn" onclick="getAllNewArrivals()">Get All (Admin)</button>
+                <button class="btn" onclick="getPublicNewArrivals()">Get Public</button>
+                <button class="btn" onclick="getFeaturedNewArrivals()">Get Featured</button>
+                <div id="getResult" class="result" style="display: none;"></div>
+            </div>
+
+            <!-- Update/Delete Section -->
+            <div class="test-section">
+                <h2>✏️ Update/Delete New Arrival</h2>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="newArrivalId">New Arrival ID:</label>
+                        <input type="text" id="newArrivalId" placeholder="Enter new arrival ID">
+                    </div>
+                    <div class="form-group">
+                        <label for="updatePrice">New Price (₹):</label>
+                        <input type="number" id="updatePrice" placeholder="Enter new price">
+                    </div>
+                </div>
+                <button class="btn" onclick="updateNewArrival()">Update</button>
+                <button class="btn btn-danger" onclick="deleteNewArrival()">Delete</button>
+                <div id="updateResult" class="result" style="display: none;"></div>
+            </div>
+
+            <!-- Loading Spinner -->
+            <div id="loading" class="loading">
+                <div class="spinner"></div>
+                <p>Processing request...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:8000/api';
+        let authToken = null;
+
+        // Check server connection
+        async function checkConnection() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/health`);
+                const data = await response.json();
+                if (data.success) {
+                    document.getElementById('connectionStatus').className = 'status connected';
+                    document.getElementById('connectionStatus').innerHTML = '🟢 Connected to server';
+                }
+            } catch (error) {
+                document.getElementById('connectionStatus').className = 'status disconnected';
+                document.getElementById('connectionStatus').innerHTML = '🔴 Not connected to server';
+            }
+        }
+
+        // Show/hide loading
+        function showLoading(show) {
+            document.getElementById('loading').style.display = show ? 'block' : 'none';
+        }
+
+        // Show result
+        function showResult(elementId, data, type = 'info') {
+            const element = document.getElementById(elementId);
+            element.style.display = 'block';
+            element.className = `result ${type}`;
+            element.textContent = typeof data === 'object' ? JSON.stringify(data, null, 2) : data;
+        }
+
+        // Login as admin
+        async function loginAdmin() {
+            showLoading(true);
+            try {
+                const email = document.getElementById('adminEmail').value;
+                const password = document.getElementById('adminPassword').value;
+
+                const response = await fetch(`${API_BASE_URL}/admin/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    authToken = data.token;
+                    showResult('loginResult', data, 'success');
+                } else {
+                    showResult('loginResult', data, 'error');
+                }
+            } catch (error) {
+                showResult('loginResult', `Error: ${error.message}`, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // Create new arrival
+        async function createNewArrival() {
+            if (!authToken) {
+                showResult('createResult', 'Please login first', 'error');
+                return;
+            }
+
+            const imageFiles = document.getElementById('imageFiles').files;
+            if (imageFiles.length < 3) {
+                showResult('createResult', {
+                    success: false,
+                    message: 'Minimum 3 images are required. Please select at least 3 image files.',
+                    error: 'INSUFFICIENT_IMAGES',
+                    required: 3,
+                    provided: imageFiles.length
+                }, 'error');
+                return;
+            }
+
+            // Validate file types and sizes
+            const invalidFiles = [];
+            for (let i = 0; i < imageFiles.length; i++) {
+                const file = imageFiles[i];
+                if (!file.type.startsWith('image/')) {
+                    invalidFiles.push(file.name);
+                }
+                if (file.size > 10 * 1024 * 1024) { // 10MB
+                    showResult('createResult', {
+                        success: false,
+                        message: `File "${file.name}" is too large. Maximum size is 10MB per image.`,
+                        error: 'FILE_SIZE_LIMIT',
+                        file: file.name,
+                        size: (file.size / 1024 / 1024).toFixed(2) + 'MB'
+                    }, 'error');
+                    return;
+                }
+            }
+
+            if (invalidFiles.length > 0) {
+                showResult('createResult', {
+                    success: false,
+                    message: 'Only image files are allowed. Please check your uploaded files.',
+                    error: 'INVALID_FILE_TYPE',
+                    invalidFiles: invalidFiles
+                }, 'error');
+                return;
+            }
+
+            showLoading(true);
+            try {
+                const formData = new FormData();
+                
+                // Add all form data
+                const productId = document.getElementById('productId').value.trim();
+                if (productId) {
+                    formData.append('productId', productId);
+                }
+                formData.append('title', document.getElementById('title').value);
+                formData.append('description', document.getElementById('description').value);
+                formData.append('currentPrice', document.getElementById('currentPrice').value);
+                formData.append('originalPrice', document.getElementById('originalPrice').value);
+                formData.append('discountPercentage', document.getElementById('discountPercentage').value);
+                formData.append('bestPrice', document.getElementById('bestPrice').value);
+                formData.append('brand', document.getElementById('brand').value);
+                formData.append('color', document.getElementById('color').value);
+                formData.append('material', document.getElementById('material').value);
+                formData.append('rating', document.getElementById('rating').value);
+                formData.append('numReviews', document.getElementById('numReviews').value);
+                formData.append('tags', document.getElementById('tags').value);
+                formData.append('adminNotes', document.getElementById('adminNotes').value);
+
+                // Add images with proper field name
+                for (let i = 0; i < imageFiles.length; i++) {
+                    formData.append('images', imageFiles[i]); // Important: field name must be 'images'
+                    formData.append(`imageAlt_${i}`, `Image ${i + 1}`);
+                }
+
+                const response = await fetch(`${API_BASE_URL}/products/new-arrival`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: formData
+                });
+
+                const data = await response.json();
+                showResult('createResult', data, data.success ? 'success' : 'error');
+            } catch (error) {
+                showResult('createResult', `Error: ${error.message}`, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // Get all new arrivals
+        async function getAllNewArrivals() {
+            if (!authToken) {
+                showResult('getResult', 'Please login first', 'error');
+                return;
+            }
+
+            showLoading(true);
+            try {
+                const response = await fetch(`${API_BASE_URL}/products/new-arrival`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+                showResult('getResult', data, data.success ? 'success' : 'error');
+            } catch (error) {
+                showResult('getResult', `Error: ${error.message}`, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // Get public new arrivals
+        async function getPublicNewArrivals() {
+            showLoading(true);
+            try {
+                const response = await fetch(`${API_BASE_URL}/products/new-arrival/public`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+                showResult('getResult', data, data.success ? 'success' : 'error');
+            } catch (error) {
+                showResult('getResult', `Error: ${error.message}`, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // Get featured new arrivals
+        async function getFeaturedNewArrivals() {
+            showLoading(true);
+            try {
+                const response = await fetch(`${API_BASE_URL}/products/new-arrival/public/featured`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+                showResult('getResult', data, data.success ? 'success' : 'error');
+            } catch (error) {
+                showResult('getResult', `Error: ${error.message}`, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // Update new arrival
+        async function updateNewArrival() {
+            if (!authToken) {
+                showResult('updateResult', 'Please login first', 'error');
+                return;
+            }
+
+            const newArrivalId = document.getElementById('newArrivalId').value;
+            const newPrice = document.getElementById('updatePrice').value;
+
+            if (!newArrivalId) {
+                showResult('updateResult', 'Please enter new arrival ID', 'error');
+                return;
+            }
+
+            showLoading(true);
+            try {
+                const updateData = {};
+                if (newPrice) updateData.currentPrice = parseFloat(newPrice);
+
+                const response = await fetch(`${API_BASE_URL}/products/new-arrival/${newArrivalId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(updateData)
+                });
+
+                const data = await response.json();
+                showResult('updateResult', data, data.success ? 'success' : 'error');
+            } catch (error) {
+                showResult('updateResult', `Error: ${error.message}`, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // Delete new arrival
+        async function deleteNewArrival() {
+            if (!authToken) {
+                showResult('updateResult', 'Please login first', 'error');
+                return;
+            }
+
+            const newArrivalId = document.getElementById('newArrivalId').value;
+
+            if (!newArrivalId) {
+                showResult('updateResult', 'Please enter new arrival ID', 'error');
+                return;
+            }
+
+            if (!confirm('Are you sure you want to delete this new arrival?')) {
+                return;
+            }
+
+            showLoading(true);
+            try {
+                const response = await fetch(`${API_BASE_URL}/products/new-arrival/${newArrivalId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+                showResult('updateResult', data, data.success ? 'success' : 'error');
+            } catch (error) {
+                showResult('updateResult', `Error: ${error.message}`, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // Handle file selection
+        document.getElementById('imageFiles').addEventListener('change', function(e) {
+            const files = e.target.files;
+            const selectedFilesDiv = document.getElementById('selectedFiles');
+            selectedFilesDiv.innerHTML = '';
+
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                selectedFilesDiv.innerHTML += `<div>📎 ${file.name} (${(file.size / 1024).toFixed(1)} KB)</div>`;
+            }
+        });
+
+        // Initialize
+        checkConnection();
+        setInterval(checkConnection, 30000); // Check every 30 seconds
+    </script>
+</body>
+</html> 
