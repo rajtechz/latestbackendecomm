@@ -7,6 +7,9 @@ import adminRoutes from "./routes/admin/adminRoute.js";
 import productRoutes from "./routes/products/productRoutes.js"
 import bannerRoutes from "./routes/admin/bannerRoutes.js";
 import newArrivalRoutes from "./routes/products/newArrivalRoutes.js";
+import seasonTopPickRoutes from "./routes/products/seasonTopPickRoutes.js";
+import trendingCategoryRoutes from "./routes/products/trendingCategoryRoutes.js";
+import cartRoutes from "./routes/cartRoutes.js";
 
 
 // Load environment variables
@@ -85,6 +88,9 @@ app.use("/api/admin", adminRoutes);
 app.use('/api/products', productRoutes);
 app.use("/api/admin/banners", bannerRoutes);
 app.use("/api/products/new-arrival", newArrivalRoutes);
+app.use("/api/products/season-top-picks", seasonTopPickRoutes);
+app.use("/api/products/trending-categories", trendingCategoryRoutes);
+app.use("/api/cart", cartRoutes);
 
 
 connectDB().then(() => {
