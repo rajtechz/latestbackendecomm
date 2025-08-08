@@ -283,7 +283,6 @@ async function runTests() {
     console.log('- Get public new arrivals: ✅');
     console.log('- Get featured new arrivals: ✅');
     console.log('- Create new arrival: ⚠️ (requires actual product ID and images)');
-    
     console.log('\n🎯 To test creation, you need:');
     console.log('1. A valid product ID from your database');
     console.log('2. At least 3 image files');
