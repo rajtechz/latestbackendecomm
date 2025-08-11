@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Product Upload API</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        input[type="text"], input[type="number"], select, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        textarea {
+            height: 80px;
+            resize: vertical;
+        }
+        .file-input {
+            border: 2px dashed #ddd;
+            padding: 20px;
+            text-align: center;
+            border-radius: 5px;
+            background-color: #fafafa;
+            cursor: pointer;
+            transition: border-color 0.3s;
+        }
+        .file-input:hover {
+            border-color: #007bff;
+        }
+        .file-input input[type="file"] {
+            display: none;
+        }
+        .file-input.dragover {
+            border-color: #007bff;
+            background-color: #f0f8ff;
+        }
+        .file-list {
+            margin-top: 10px;
+            font-size: 12px;
+            color: #666;
+        }
+        .submit-btn {
+            background-color: #007bff;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            width: 100%;
+            transition: background-color 0.3s;
+        }
+        .submit-btn:hover {
+            background-color: #0056b3;
+        }
+        .submit-btn:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        .response {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            display: none;
+        }
+        .response.success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .response.error {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .required {
+            color: red;
+        }
+        .token-input {
+            background-color: #fff3cd;
+            border-color: #ffeaa7;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Test Product Upload API</h1>
+        <p style="text-align: center; color: #666; margin-bottom: 30px;">
+            Test the updated product creation API with separate thumbnail image uploads
+        </p>
+
+        <form id="productForm">
+            <!-- JWT Token -->
+            <div class="form-group">
+                <label for="jwtToken">JWT Token <span class="required">*</span></label>
+                <input type="text" id="jwtToken" name="jwtToken" placeholder="Bearer YOUR_JWT_TOKEN" required class="token-input">
+                <small style="color: #666;">Include the full token including "Bearer "</small>
+            </div>
+
+            <!-- Basic Product Info -->
+            <div class="form-group">
+                <label for="title">Product Title <span class="required">*</span></label>
+                <input type="text" id="title" name="title" value="Premium Cotton T-Shirt" required>
+            </div>
+
+            <div class="form-group">
+                <label for="slug">Product Slug <span class="required">*</span></label>
+                <input type="text" id="slug" name="slug" value="premium-cotton-tshirt" required>
+                <small style="color: #666;">Must be unique, lowercase with hyphens</small>
+            </div>
+
+            <div class="form-group">
+                <label for="description">Description</label>
+                <textarea id="description" name="description">High-quality 100% cotton t-shirt with a comfortable fit. Perfect for everyday wear and casual occasions.</textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="shortDescription">Short Description</label>
+                <textarea id="shortDescription" name="shortDescription">Comfortable cotton t-shirt for daily wear</textarea>
+            </div>
+
+            <!-- Pricing -->
+            <div class="form-group">
+                <label for="currentPrice">Current Price <span class="required">*</span></label>
+                <input type="number" id="currentPrice" name="currentPrice" value="29.99" step="0.01" min="0" required>
+            </div>
+
+            <div class="form-group">
+                <label for="originalPrice">Original Price</label>
+                <input type="number" id="originalPrice" name="originalPrice" value="39.99" step="0.01" min="0">
+            </div>
+
+            <!-- Category and Brand -->
+            <div class="form-group">
+                <label for="category">Category <span class="required">*</span></label>
+                <select id="category" name="category" required>
+                    <option value="fashion" selected>Fashion</option>
+                    <option value="electronics">Electronics</option>
+                    <option value="sport">Sport</option>
+                    <option value="beauty">Beauty</option>
+                    <option value="furniture">Furniture</option>
+                    <option value="books">Books</option>
+                    <option value="men">Men</option>
+                    <option value="women">Women</option>
+                    <option value="kids">Kids</option>
+                    <option value="other">Other</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="subCategory">Sub Category</label>
+                <input type="text" id="subCategory" name="subCategory" value="clothing">
+            </div>
+
+            <div class="form-group">
+                <label for="brand">Brand</label>
+                <input type="text" id="brand" name="brand" value="Fashion Brand">
+            </div>
+
+            <div class="form-group">
+                <label for="sku">SKU <span class="required">*</span></label>
+                <input type="text" id="sku" name="sku" value="TSHIRT-001" required>
+                <small style="color: #666;">Must be unique across all products</small>
+            </div>
+
+            <!-- Product Images -->
+            <div class="form-group">
+                <label for="images">Product Images <span class="required">*</span></label>
+                <div class="file-input" id="imagesInput">
+                    <input type="file" id="images" name="images" multiple accept="image/*" required>
+                    <p>📁 Click to select or drag & drop multiple product images</p>
+                    <p style="font-size: 12px; color: #666;">Supports: JPG, PNG, GIF, WEBP (Max: 5MB each)</p>
+                </div>
+                <div class="file-list" id="imagesList"></div>
+            </div>
+
+            <!-- Thumbnail Image -->
+            <div class="form-group">
+                <label for="thumbnailImage">Thumbnail Image (Optional)</label>
+                <div class="file-input" id="thumbnailInput">
+                    <input type="file" id="thumbnailImage" name="thumbnailImage" accept="image/*">
+                    <p>🖼️ Click to select or drag & drop thumbnail image</p>
+                    <p style="font-size: 12px; color: #666;">If not provided, first product image becomes thumbnail</p>
+                </div>
+                <div class="file-list" id="thumbnailList"></div>
+            </div>
+
+            <!-- Additional Fields -->
+            <div class="form-group">
+                <label for="stockQuantity">Stock Quantity</label>
+                <input type="number" id="stockQuantity" name="stockQuantity" value="100" min="0">
+            </div>
+
+            <div class="form-group">
+                <label for="availableSizes">Available Sizes (comma-separated)</label>
+                <input type="text" id="availableSizes" name="availableSizes" value="XS, S, M, L, XL, XXL">
+                <small style="color: #666;">Valid sizes: XS, S, M, L, XL, XXL, XXXL, ONE_SIZE, 28, 30, 32, 34, 36, 38, 40, 42, 44, 46</small>
+            </div>
+
+            <div class="form-group">
+                <label for="labels">Labels (comma-separated)</label>
+                <input type="text" id="labels" name="labels" value="NEW DROP, BESTSELLER">
+                <small style="color: #666;">Valid labels: NEW DROP, EXCLUSIVE, BESTSELLER, LIMITED, SALE, TRENDING, FEATURED, PREMIUM</small>
+            </div>
+
+            <div class="form-group">
+                <label for="tags">Tags (comma-separated)</label>
+                <input type="text" id="tags" name="tags" value="cotton, t-shirt, casual, comfortable">
+            </div>
+
+            <div class="form-group">
+                <label for="material">Material</label>
+                <input type="text" id="material" name="material" value="100% Cotton">
+            </div>
+
+            <div class="form-group">
+                <label for="careInstructions">Care Instructions</label>
+                <textarea id="careInstructions" name="careInstructions">Machine wash cold, tumble dry low</textarea>
+            </div>
+
+            <!-- Submit Button -->
+            <button type="submit" class="submit-btn" id="submitBtn">
+                🚀 Create Product
+            </button>
+        </form>
+
+        <!-- Response Display -->
+        <div id="response" class="response"></div>
+    </div>
+
+    <script>
+        // File input handling
+        function setupFileInput(inputId, listId, isMultiple = false) {
+            const input = document.getElementById(inputId);
+            const list = document.getElementById(listId);
+            const container = input.parentElement;
+
+            // Click to select
+            container.addEventListener('click', () => input.click());
+
+            // Drag and drop
+            container.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                container.classList.add('dragover');
+            });
+
+            container.addEventListener('dragleave', () => {
+                container.classList.remove('dragover');
+            });
+
+            container.addEventListener('drop', (e) => {
+                e.preventDefault();
+                container.classList.remove('dragover');
+                const files = e.dataTransfer.files;
+                if (isMultiple) {
+                    input.files = files;
+                } else {
+                    input.files = files;
+                }
+                updateFileList(input, list);
+            });
+
+            // File selection
+            input.addEventListener('change', () => {
+                updateFileList(input, list);
+            });
+        }
+
+        function updateFileList(input, list) {
+            list.innerHTML = '';
+            if (input.files.length > 0) {
+                const fileArray = Array.from(input.files);
+                fileArray.forEach((file, index) => {
+                    const fileInfo = document.createElement('div');
+                    fileInfo.innerHTML = `
+                        <strong>${index + 1}.</strong> ${file.name} 
+                        <span style="color: #007bff;">(${(file.size / 1024 / 1024).toFixed(2)} MB)</span>
+                    `;
+                    list.appendChild(fileInfo);
+                });
+            }
+        }
+
+        // Form submission
+        document.getElementById('productForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const submitBtn = document.getElementById('submitBtn');
+            const responseDiv = document.getElementById('response');
+            
+            // Disable submit button
+            submitBtn.disabled = true;
+            submitBtn.textContent = '⏳ Creating Product...';
+            
+            try {
+                const formData = new FormData();
+                
+                // Add all form fields
+                const form = e.target;
+                const formElements = form.elements;
+                
+                for (let element of formElements) {
+                    if (element.name && element.name !== 'jwtToken') {
+                        if (element.type === 'file') {
+                            if (element.files.length > 0) {
+                                if (element.multiple) {
+                                    for (let file of element.files) {
+                                        formData.append(element.name, file);
+                                    }
+                                } else {
+                                    formData.append(element.name, element.files[0]);
+                                }
+                            }
+                        } else {
+                            formData.append(element.name, element.value);
+                        }
+                    }
+                }
+                
+                // Get JWT token
+                const jwtToken = document.getElementById('jwtToken').value;
+                if (!jwtToken) {
+                    throw new Error('JWT Token is required');
+                }
+                
+                // Make API request
+                const response = await fetch('http://localhost:8000/api/products/create', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'Authorization': jwtToken.startsWith('Bearer ') ? jwtToken : `Bearer ${jwtToken}`
+                    }
+                });
+                
+                const result = await response.json();
+                
+                // Display response
+                responseDiv.style.display = 'block';
+                if (response.ok) {
+                    responseDiv.className = 'response success';
+                    responseDiv.innerHTML = `
+                        <h3>✅ Success!</h3>
+                        <p><strong>Message:</strong> ${result.message}</p>
+                        <p><strong>Product ID:</strong> ${result.data._id}</p>
+                        <p><strong>Title:</strong> ${result.data.title}</p>
+                        <p><strong>Images:</strong> ${result.data.images.length} uploaded</p>
+                        <p><strong>Thumbnail:</strong> ${result.data.thumbnailImage.url ? 'Yes' : 'No'}</p>
+                        <details>
+                            <summary>View Full Response</summary>
+                            <pre style="background: #f8f9fa; padding: 10px; border-radius: 5px; overflow-x: auto;">${JSON.stringify(result, null, 2)}</pre>
+                        </details>
+                    `;
+                } else {
+                    responseDiv.className = 'response error';
+                    responseDiv.innerHTML = `
+                        <h3>❌ Error!</h3>
+                        <p><strong>Status:</strong> ${response.status}</p>
+                        <p><strong>Message:</strong> ${result.message || 'Unknown error'}</p>
+                        <details>
+                            <summary>View Full Response</summary>
+                            <pre style="background: #f8f9fa; padding: 10px; border-radius: 5px; overflow-x: auto;">${JSON.stringify(result, null, 2)}</pre>
+                        </details>
+                    `;
+                }
+                
+            } catch (error) {
+                responseDiv.style.display = 'block';
+                responseDiv.className = 'response error';
+                responseDiv.innerHTML = `
+                    <h3>❌ Error!</h3>
+                    <p><strong>Error:</strong> ${error.message}</p>
+                `;
+            } finally {
+                // Re-enable submit button
+                submitBtn.disabled = false;
+                submitBtn.textContent = '🚀 Create Product';
+            }
+        });
+
+        // Initialize file inputs
+        setupFileInput('images', 'imagesList', true);
+        setupFileInput('thumbnailImage', 'thumbnailList', false);
+
+        // Auto-generate slug from title
+        document.getElementById('title').addEventListener('input', function() {
+            const slug = this.value
+                .toLowerCase()
+                .replace(/[^a-z0-9\s-]/g, '')
+                .replace(/\s+/g, '-')
+                .replace(/-+/g, '-')
+                .trim();
+            document.getElementById('slug').value = slug;
+        });
+
+        // Auto-generate SKU from title and category
+        function updateSKU() {
+            const title = document.getElementById('title').value;
+            const category = document.getElementById('category').value;
+            if (title && category) {
+                const shortTitle = title.split(' ')[0].substring(0, 3).toUpperCase();
+                const shortCategory = category.substring(0, 3).toUpperCase();
+                const randomNum = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+                document.getElementById('sku').value = `${shortTitle}-${shortCategory}-${randomNum}`;
+            }
+        }
+
+        document.getElementById('title').addEventListener('input', updateSKU);
+        document.getElementById('category').addEventListener('change', updateSKU);
+    </script>
+</body>
+</html>

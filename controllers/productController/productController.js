@@ -65,16 +65,24 @@ export const createProduct = async (req, res) => {
     
     // Handle multiple images upload
     let uploadedImages = [];
+    let thumbnailImage = { url: '', alt: `${processedTitle} thumbnail` };
     
     // Add debug logging
-    console.log('Controller - Files received:', req.files ? req.files.length : 0);
-    if (req.files && req.files.length > 0) {
-      console.log('Controller - File names:', req.files.map(f => f.originalname));
+    console.log('Controller - Files received:', req.files);
+    if (req.files) {
+      console.log('Images field:', req.files.images ? req.files.images.length : 0);
+      console.log('Thumbnail field:', req.files.thumbnailImage ? req.files.thumbnailImage.length : 0);
     }
     
-    if (req.files && req.files.length > 0) {
+    // Handle regular product images
+    if (req.files && req.files.images && req.files.images.length > 0) {
       try {
-        const uploadPromises = req.files.map(async (file, index) => {
+        // Get regular image files
+        const regularImageFiles = req.files.images;
+        console.log('Regular image files:', regularImageFiles.length);
+        
+        // Upload regular product images
+        const uploadPromises = regularImageFiles.map(async (file, index) => {
           const uploadedImage = await uploadImageToS3(file, `products/${processedCategory}`);
           return {
             url: uploadedImage.url,
@@ -84,6 +92,23 @@ export const createProduct = async (req, res) => {
           };
         });
         uploadedImages = await Promise.all(uploadPromises);
+        
+        // Handle thumbnail image separately
+        if (req.files.thumbnailImage && req.files.thumbnailImage.length > 0) {
+          const thumbnailFile = req.files.thumbnailImage[0];
+          const uploadedThumbnail = await uploadImageToS3(thumbnailFile, `products/${processedCategory}/thumbnails`);
+          thumbnailImage = {
+            url: uploadedThumbnail.url,
+            alt: req.body.thumbnailAlt || `${processedTitle} thumbnail`
+          };
+        } else {
+          // Fallback: use first regular image as thumbnail if no thumbnail uploaded
+          thumbnailImage = {
+            url: uploadedImages[0].url,
+            alt: uploadedImages[0].alt
+          };
+        }
+        
       } catch (uploadError) {
         console.error('Images upload error:', uploadError);
         return res.status(500).json({
@@ -92,6 +117,14 @@ export const createProduct = async (req, res) => {
         });
       }
     } else {
+      return res.status(400).json({
+        success: false,
+        message: 'At least one product image is required in the "images" field'
+      });
+    }
+    
+    // Ensure we have at least one image
+    if (uploadedImages.length === 0) {
       return res.status(400).json({
         success: false,
         message: 'At least one product image is required'
@@ -167,29 +200,7 @@ export const createProduct = async (req, res) => {
     console.log('Debug - parsedSpecifications:', parsedSpecifications);
     
     // Handle thumbnail image
-    let thumbnailImage = { url: '', alt: `${processedTitle} thumbnail` };
-    
-    if (processedThumbnailImageIndex !== undefined && uploadedImages.length > 0) {
-      const index = parseInt(processedThumbnailImageIndex);
-      if (index >= 0 && index < uploadedImages.length) {
-        thumbnailImage = {
-          url: uploadedImages[index].url,
-          alt: uploadedImages[index].alt
-        };
-      } else {
-        // If invalid index, use first image as thumbnail
-        thumbnailImage = {
-          url: uploadedImages[0].url,
-          alt: uploadedImages[0].alt
-        };
-      }
-    } else if (uploadedImages.length > 0) {
-      // Default to first image if no thumbnail index specified
-      thumbnailImage = {
-        url: uploadedImages[0].url,
-        alt: uploadedImages[0].alt
-      };
-    }
+    // The thumbnailImage object is now populated above, so this block is no longer needed.
     
     // Create product
     const product = new Product({
@@ -351,9 +362,9 @@ export const updateProduct = async (req, res) => {
     // Handle new images upload if provided
     let updatedImages = product.images;
     
-    if (req.files && req.files.length > 0) {
+    if (req.files && req.files.images && req.files.images.length > 0) {
       try {
-        const uploadPromises = req.files.map(async (file, index) => {
+        const uploadPromises = req.files.images.map(async (file, index) => {
           const uploadedImage = await uploadImageToS3(file, `products/${product.category}`);
           return {
             url: uploadedImage.url,

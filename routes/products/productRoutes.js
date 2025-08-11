@@ -1,5 +1,4 @@
 import express from 'express';
-import multer from 'multer';
 import {
   createProduct,
   getAllProducts,
@@ -20,109 +19,31 @@ import {
   getUserProducts
 } from '../../controllers/productController/productController.js';
 import { isAuthenticated, isAdmin } from '../../middleware/authMiddleware.js';
+import { uploadMultipleImages, handleUploadError } from '../../middleware/uploadMiddleware.js';
 
 const router = express.Router();
 
-// Configure multer for image uploads
-const storage = multer.memoryStorage();
-
-const fileFilter = (req, file, cb) => {
-  // Accept images only
-  if (file.mimetype.startsWith('image/')) {
-    cb(null, true);
-  } else {
-    cb(new Error('Only image files are allowed!'), false);
-  }
-};
-
-const upload = multer({
-  storage: storage,
-  fileFilter: fileFilter,
-  limits: {
-    fileSize: 10 * 1024 * 1024, // 10MB per file
-    files: 10 // Maximum 10 images per product
-  }
-}).array('images', 10);
-
-// Handle multer errors
-const handleMulterError = (error, req, res, next) => {
-  console.log('Multer error:', error);
-  
-  if (error instanceof multer.MulterError) {
-    switch (error.code) {
-      case 'LIMIT_FILE_SIZE':
-        return res.status(400).json({
-          success: false,
-          message: 'File too large. Maximum size is 10MB.',
-          error: 'FILE_SIZE_LIMIT'
-        });
-      case 'LIMIT_FILE_COUNT':
-        return res.status(400).json({
-          success: false,
-          message: 'Too many files. Maximum 10 images allowed per product.',
-          error: 'FILE_COUNT_LIMIT'
-        });
-      case 'LIMIT_UNEXPECTED_FILE':
-        return res.status(400).json({
-          success: false,
-          message: 'Unexpected file field. Please use "images" field for file upload.',
-          error: 'UNEXPECTED_FILE_FIELD',
-          expectedField: 'images'
-        });
-      default:
-        return res.status(400).json({
-          success: false,
-          message: `File upload error: ${error.message}`,
-          error: 'MULTER_ERROR',
-          code: error.code
-        });
-    }
-  }
-  
-  if (error) {
-    return res.status(400).json({
-      success: false,
-      message: error.message,
-      error: 'VALIDATION_ERROR'
-    });
-  }
-  
-  next();
-};
-
 // Custom middleware to handle file upload with better error handling
 const handleFileUpload = (req, res, next) => {
-  upload(req, res, (err) => {
+  uploadMultipleImages(req, res, (err) => {
     if (err) {
-      return handleMulterError(err, req, res, next);
-    }
-    
-    // Validate image requirement for create operation
-    if (req.method === 'POST' && (!req.files || req.files.length === 0)) {
-      return res.status(400).json({
-        success: false,
-        message: 'At least one product image is required.',
-        error: 'MISSING_IMAGES'
-      });
-    }
-    
-    // Validate file types if files are uploaded
-    if (req.files && req.files.length > 0) {
-      const invalidFiles = req.files.filter(file => !file.mimetype.startsWith('image/'));
-      if (invalidFiles.length > 0) {
-        return res.status(400).json({
-          success: false,
-          message: 'Only image files are allowed. Please check your uploaded files.',
-          error: 'INVALID_FILE_TYPE',
-          invalidFiles: invalidFiles.map(file => file.originalname)
-        });
-      }
+      return handleUploadError(err, req, res, next);
     }
     
     // Add debug logging
-    console.log('Files received:', req.files ? req.files.length : 0);
-    if (req.files && req.files.length > 0) {
-      console.log('File names:', req.files.map(f => f.originalname));
+    console.log('Route middleware - Files received:', req.files);
+    if (req.files) {
+      console.log('Route middleware - Images field:', req.files.images ? req.files.images.length : 0);
+      console.log('Route middleware - Thumbnail field:', req.files.thumbnailImage ? req.files.thumbnailImage.length : 0);
+    }
+    
+    // Validate image requirement for create operation
+    if (req.route?.path === '/create' && (!req.files || !req.files.images || req.files.images.length === 0)) {
+      return res.status(400).json({
+        success: false,
+        message: 'At least one product image is required in the "images" field.',
+        error: 'MISSING_IMAGES'
+      });
     }
     
     next();

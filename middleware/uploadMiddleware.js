@@ -8,14 +8,14 @@ const storage = multer.memoryStorage();
 const fileFilter = (req, file, cb) => {
   try {
     // Check file type
-    const allowedTypes = /jpeg|jpg|png|webp|gif/;
+    const allowedTypes = /jpeg|jpg|png|webp|gif|avif/;
     const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
     const mimetype = allowedTypes.test(file.mimetype);
 
     if (mimetype && extname) {
       return cb(null, true);
     } else {
-      cb(new Error('Only image files (jpeg, jpg, png, webp, gif) are allowed!'), false);
+      cb(new Error('Only image files (jpeg, jpg, png, webp, gif, avif) are allowed!'), false);
     }
   } catch (error) {
     cb(new Error('File validation error: ' + error.message), false);
@@ -33,7 +33,13 @@ const upload = multer({
 });
 
 // Middleware for multiple image uploads
-export const uploadMultipleImages = upload.array('images', 10); // 'images' is the field name, max 10 files
+export const uploadMultipleImages = upload.fields([
+  { name: 'images', maxCount: 10 },           // Product images (multiple)
+  { name: 'thumbnailImage', maxCount: 1 }     // Thumbnail image (single)
+]);
+
+// Legacy middleware for backward compatibility (if needed)
+export const uploadImagesOnly = upload.array('images', 10);
 
 // Error handling middleware for multer
 export const handleUploadError = (error, req, res, next) => {
@@ -53,7 +59,9 @@ export const handleUploadError = (error, req, res, next) => {
     if (error.code === 'LIMIT_UNEXPECTED_FILE') {
       return res.status(400).json({
         success: false,
-        message: 'Unexpected file field. Please check your form data.'
+        message: 'Unexpected file field. Please use "images" field for product images and "thumbnailImage" field for thumbnail.',
+        error: 'UNEXPECTED_FILE_FIELD',
+        expectedFields: ['images', 'thumbnailImage']
       });
     }
   }
