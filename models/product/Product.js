@@ -1,5 +1,4 @@
 import mongoose from 'mongoose';
-
 const productSchema = new mongoose.Schema({
   // Basic product information
   title: {

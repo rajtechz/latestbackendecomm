@@ -4,6 +4,7 @@ const BASE_URL = 'http://localhost:8000/api';
 const EXISTING_SESSION_ID = '7b3b7a3e-44f2-4578-a918-0ead6a7b181a'; // Your existing session ID
 
 // Different items to add to your existing cart
+
 const differentItems = [
   {
     itemId: '68931440841ad05283f1f0bc', // Different product

@@ -24,6 +24,12 @@ const app = express();
 // CORS configuration
 const corsOptions = {
   origin: function (origin, callback) {
+    // Development mode - allow all origins (remove this in production!)
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🔧 Development mode: Allowing all origins');
+      return callback(null, true);
+    }
+    
     // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin) return callback(null, true);
     
@@ -34,12 +40,20 @@ const corsOptions = {
       'http://127.0.0.1:5173',
       'http://127.0.0.1:3000',
       'http://127.0.0.1:8080',
+      'http://localhost:4173', // Vite preview port
+      'http://127.0.0.1:4173',
       process.env.FRONTEND_URL // From environment variable
     ].filter(Boolean);
     
+    // Debug logging
+    console.log('🔍 CORS Check - Origin:', origin);
+    console.log('✅ Allowed Origins:', allowedOrigins);
+    
     if (allowedOrigins.indexOf(origin) !== -1) {
+      console.log('✅ CORS: Origin allowed');
       callback(null, true);
     } else {
+      console.log('❌ CORS: Origin blocked');
       callback(new Error('Not allowed by CORS'));
     }
   },
